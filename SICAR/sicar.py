@@ -111,7 +111,8 @@ class Sicar(Url):
         Returns:
             None
         """
-        self._session = httpx.Client(verify=False)
+        self._timeout = httpx.Timeout(600.0, read=600.0, write=600.0, connect=600.0)
+        self._session = httpx.Client(verify=False, timeout=self._timeout)
         self._session.headers.update(
             headers
             if isinstance(headers, dict)
@@ -213,7 +214,7 @@ class Sicar(Url):
             {"idEstado": state.value, "tipoBase": polygon.value, "ReCaptcha": captcha}
         )
 
-        with self._session.stream("GET", f"{self._DOWNLOAD_BASE}?{query}") as response:
+        with self._session.stream("GET", f"{self._DOWNLOAD_BASE}?{query}", timeout=self._timeout) as response:
             try:
                 if response.status_code != httpx.codes.OK:
                     raise UrlNotOkException(f"{self._DOWNLOAD_BASE}?{query}")
